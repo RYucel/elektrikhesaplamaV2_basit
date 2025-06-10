@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>EL-SEN Fatura Hesaplama</title>
+    <meta name="description" content="Basitleştirilmiş EL-SEN elektrik faturası hesaplama aracı.">
+    
+    <!-- PWA Manifest & Theme -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4F46E5">
+    
+    <!-- Apple PWA Ayarları -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Fatura Hesapla">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <main class="container">
+        <header>
+            <h1>⚡️ Fatura Hesaplayıcı</h1>
+            <p>Tahmini elektrik faturası tutarınızı öğrenin.</p>
+        </header>
+
+        <form id="calculator-form">
+            <div class="input-group">
+                <label for="prevReading">Önceki Sayaç Değeri (kWh)</label>
+                <input type="number" id="prevReading" placeholder="Örn: 12345" inputmode="numeric" required>
+            </div>
+
+            <div class="input-group">
+                <label for="currentReading">Şu Anki Sayaç Değeri (kWh)</label>
+                <input type="number" id="currentReading" placeholder="Örn: 12845" inputmode="numeric" required>
+                <p class="note">
+                    <strong>**Sayaç üzerindeki ekranda 1.8.0 kodu çıktığında ekranda daha büyük karakterlerle görülen sayıyı, ondalık kısmı hariç olacak şekilde okunan sayaç değeri olarak giriniz.**</strong>
+                </p>
+            </div>
+            
+            <button type="submit" id="calculate-btn">HESAPLA</button>
+
+            <div class="advanced-options">
+                <label for="dayCount">Fatura Gün Sayısı:</label>
+                <input type="number" id="dayCount" value="30" min="1" inputmode="numeric">
+            </div>
+        </form>
+
+        <div id="result-container" class="hidden">
+            <p>Tahmini Fatura Tutarı</p>
+            <h2 id="total-amount">0.00 TL</h2>
+            
+            <!-- AKSA Karşılaştırma Bölümü -->
+            <div class="aksa-comparison">
+                <h3>AKSA Olmasaydı...</h3>
+                <p>Aynı tüketim için ödeyeceğiniz tahmini tutar:</p>
+                <p class="what-if-amount" id="aksa-what-if-amount">0.00 TL</p>
+                <p>Mevcut faturanızdaki AKSA kaynaklı ek maliyet:</p>
+                <p class="extra-cost" id="aksa-extra-cost">0.00 TL</p>
+            </div>
+        </div>
+    </main>
+
+    <script src="app.js"></script>
+    <script>
+        // Service Worker'ı kaydet
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => console.log('ServiceWorker kaydı başarılı:', registration.scope))
+                    .catch(error => console.log('ServiceWorker kaydı başarısız:', error));
+            });
+        }
+    </script>
+</body>
+</html>
