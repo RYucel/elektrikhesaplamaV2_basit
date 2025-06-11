@@ -82,4 +82,42 @@ document.addEventListener('DOMContentLoaded', () => {
         // Sonuca pürüzsüz kaydır
         resultContainer.scrollIntoView({ behavior: 'smooth' });
     });
+
+    // YENİ EKLENECEK PWA KURULUM MANTIĞI
+    let deferredPrompt;
+    const installButton = document.getElementById('install-pwa-btn');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+        // Tarayıcının kendi kurulum istemini göstermesini engelle
+        e.preventDefault();
+        // `beforeinstallprompt` olayını daha sonra kullanmak üzere sakla
+        deferredPrompt = e;
+        // Kendi "Uygulamayı Yükle" butonumuzu göster
+        installButton.classList.remove('hidden');
+        console.log('`beforeinstallprompt` olayı yakalandı. Kurulum butonu gösteriliyor.');
+    });
+
+    installButton.addEventListener('click', async () => {
+        if (deferredPrompt) {
+            // Butonu gizle, çünkü istem bir kez gösterilebilir
+            installButton.classList.add('hidden');
+            
+            // Kurulum istemini göster
+            deferredPrompt.prompt();
+            
+            // Kullanıcının seçimini bekle
+            const { outcome } = await deferredPrompt.userChoice;
+            console.log(`Kullanıcı kurulumu ${outcome} etti.`);
+            
+            // `deferredPrompt` değişkenini temizle, çünkü artık kullanılamaz
+            deferredPrompt = null;
+        }
+    });
+
+    window.addEventListener('appinstalled', () => {
+        // Uygulama yüklendiğinde butonu tamamen gizle ve konsola bilgi yaz
+        console.log('PWA başarıyla yüklendi!');
+        installButton.classList.add('hidden');
+        deferredPrompt = null;
+    });
 });
