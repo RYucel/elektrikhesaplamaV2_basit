@@ -75,17 +75,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const totalAmountElement = document.getElementById('total-amount');
     const whatIfAmountElement = document.getElementById('aksa-what-if-amount');
     const extraCostElement = document.getElementById('aksa-extra-cost');
+    const billingBreakdownElement = document.getElementById('billing-breakdown');
 
     // SABİT DEĞERLER (KIB-TEK Tarifesinden)
     const TARIFF_SLICES = [
-        { range_kwh: '0-250', capacity_kwh_30_days: 250, unit_price_tl_kwh: 4.8044 },
-        { range_kwh: '251-500', capacity_kwh_30_days: 250, unit_price_tl_kwh: 9.9115 },
-        { range_kwh: '501-750', capacity_kwh_30_days: 250, unit_price_tl_kwh: 10.6573 },
-        { range_kwh: '751-1000', capacity_kwh_30_days: 250, unit_price_tl_kwh: 11.5519 },
-        { range_kwh: '1001+', capacity_kwh_30_days: Infinity, unit_price_tl_kwh: 13.8069 }
+        { range_kwh: '0-250', capacity_kwh_30_days: 250, unit_price_tl_kwh: 5.8614 },
+        { range_kwh: '251-500', capacity_kwh_30_days: 250, unit_price_tl_kwh: 12.0920 },
+        { range_kwh: '501-750', capacity_kwh_30_days: 250, unit_price_tl_kwh: 13.0019 },
+        { range_kwh: '751-1000', capacity_kwh_30_days: 250, unit_price_tl_kwh: 14.0933 },
+        { range_kwh: '1001+', capacity_kwh_30_days: Infinity, unit_price_tl_kwh: 16.8444 }
     ];
-    const FIXED_CHARGE_30_DAYS = 79.29;      // Maktu Ücret (30 günlük)
-    const STREET_LIGHTING_30_DAYS = 77.03;   // Sokak Aydınlatma (30 günlük)
+    const FIXED_CHARGE_30_DAYS = 110.58;      // Maktu Ücret (30 günlük)
+    const STREET_LIGHTING_30_DAYS = 93.98;   // Sokak Aydınlatma (30 günlük)
     const VAT_RATE = 0.10;                   // KDV Oranı (%10)
     const AKSA_COST_DIFFERENCE_RATIO = 0.28; // AKSA kaynaklı maliyet farkı oranı (%28)
 
@@ -108,12 +109,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
             let netConsumptionCost = 0;
             let remainingKwh = usedKwh;
+            const sliceDetails = [];
 
             for (const slice of TARIFF_SLICES) {
                 if (remainingKwh <= 0) break;
                 const adjustedCapacity = slice.capacity_kwh_30_days === Infinity ? Infinity : slice.capacity_kwh_30_days * prorationFactor;
                 const kwhInThisSlice = Math.min(remainingKwh, adjustedCapacity);
-                netConsumptionCost += kwhInThisSlice * slice.unit_price_tl_kwh;
+                const costInThisSlice = kwhInThisSlice * slice.unit_price_tl_kwh;
+                netConsumptionCost += costInThisSlice;
+                
+                sliceDetails.push({
+                    range: slice.range_kwh,
+                    kwh: kwhInThisSlice,
+                    price: slice.unit_price_tl_kwh,
+                    cost: costInThisSlice
+                });
+                
                 remainingKwh -= kwhInThisSlice;
             }
 
@@ -124,6 +135,65 @@ document.addEventListener('DOMContentLoaded', () => {
             const totalAmount = subTotal + vatAmount;
             const whatIfAmount = totalAmount * (1 - AKSA_COST_DIFFERENCE_RATIO);
             const extraCost = totalAmount - whatIfAmount;
+
+            // Dinamik Kırılım HTML'ini oluştur
+            let breakdownHtml = `
+                <div class="breakdown-section-title">📊 TÜKETİM DETAYLARI</div>
+                <div class="breakdown-list">
+                    <div class="breakdown-row">
+                        <span>Kullanılan Enerji:</span>
+                        <strong>${usedKwh.toFixed(0)} kWh</strong>
+                    </div>
+                    <div class="breakdown-row">
+                        <span>Fatura Gün Sayısı:</span>
+                        <strong>${dayCount} Gün</strong>
+                    </div>
+                </div>
+
+                <div class="breakdown-section-title">⚡ DİLİM HESAPLAMALARI</div>
+                <div class="slice-details-container">
+            `;
+
+            sliceDetails.forEach(detail => {
+                breakdownHtml += `
+                    <div class="slice-row">
+                        <span>Dilim (${detail.range} kWh): <strong>${detail.kwh.toFixed(0)} kWh</strong> × ${detail.price.toFixed(4)} TL</span>
+                        <strong>${detail.cost.toFixed(2)} TL</strong>
+                    </div>
+                `;
+            });
+
+            breakdownHtml += `
+                </div>
+
+                <div class="breakdown-section-title">💰 DİĞER KALEMLER & VERGİLER</div>
+                <div class="breakdown-list">
+                    <div class="breakdown-row">
+                        <span>Enerji Tüketim Bedeli:</span>
+                        <strong>${netConsumptionCost.toFixed(2)} TL</strong>
+                    </div>
+                    <div class="breakdown-row">
+                        <span>Maktu Ücret (Orantılı):</span>
+                        <strong>${adjustedFixedCharge.toFixed(2)} TL</strong>
+                    </div>
+                    <div class="breakdown-row">
+                        <span>Sokak Aydınlatma (Orantılı):</span>
+                        <strong>${adjustedStreetLighting.toFixed(2)} TL</strong>
+                    </div>
+                    <div class="breakdown-row subtotal">
+                        <span>Ara Toplam:</span>
+                        <strong>${subTotal.toFixed(2)} TL</strong>
+                    </div>
+                    <div class="breakdown-row">
+                        <span>KDV (%${(VAT_RATE * 100).toFixed(0)}):</span>
+                        <strong>${vatAmount.toFixed(2)} TL</strong>
+                    </div>
+                </div>
+            `;
+
+            if (billingBreakdownElement) {
+                billingBreakdownElement.innerHTML = breakdownHtml;
+            }
 
             totalAmountElement.textContent = `${totalAmount.toFixed(2)} TL`;
             whatIfAmountElement.textContent = `${whatIfAmount.toFixed(2)} TL`;

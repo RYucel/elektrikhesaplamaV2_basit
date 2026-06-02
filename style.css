@@ -196,5 +196,81 @@ button:hover {
 
 /* Butonu gizlemek için yardımcı sınıf */
 .hidden {
-    display: none;
+    display: none !important;
+}
+
+/* Detaylı Fatura Kırılımı Stilleri */
+.breakdown-container {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+    text-align: left;
+}
+
+.breakdown-section-title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text-color);
+    margin-top: 1.25rem;
+    margin-bottom: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.breakdown-section-title:first-child {
+    margin-top: 0;
+}
+
+.breakdown-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin-bottom: 1.25rem;
+}
+
+.breakdown-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+    color: var(--text-color-secondary);
+}
+
+.breakdown-row.highlight {
+    font-weight: 700;
+    color: var(--text-color);
+}
+
+.breakdown-row.subtotal {
+    font-weight: 700;
+    color: var(--primary-color);
+    font-size: 1.05rem;
+    border-top: 1px solid var(--border-color);
+    padding-top: 0.6rem;
+    margin-top: 0.25rem;
+}
+
+.slice-details-container {
+    background-color: var(--background-color);
+    border-radius: 8px;
+    padding: 0.75rem;
+    margin-bottom: 1.25rem;
+    border-left: 3px solid var(--primary-color);
+}
+
+.slice-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: var(--text-color-secondary);
+    padding: 0.35rem 0;
+    border-bottom: 1px dashed rgba(0, 0, 0, 0.05);
+}
+
+.slice-row:last-child {
+    border-bottom: none;
+}
+
+.slice-row strong {
+    color: var(--text-color);
 }
